@@ -10,7 +10,6 @@
 
    Please use at your own risk.
 */
-
 #include <cassert>
 #include <climits>
 #include <fstream>
