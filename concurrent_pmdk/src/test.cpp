@@ -6,14 +6,14 @@
 static inline int file_exists(char const *file) { return access(file, F_OK); }
 
 void clear_cache() {
-  // Remove cache
-  int size = 256 * 1024 * 1024;
-  char *garbage = new char[size];
-  for (int i = 0; i < size; ++i)
-    garbage[i] = i;
-  for (int i = 100; i < size; ++i)
-    garbage[i] += garbage[i - 100];
-  delete[] garbage;
+  // // Remove cache
+  // int size = 256 * 1024 * 1024;
+  // char *garbage = new char[size];
+  // for (int i = 0; i < size; ++i)
+  //   garbage[i] = i;
+  // for (int i = 100; i < size; ++i)
+  //   garbage[i] += garbage[i - 100];
+  // delete[] garbage;
 }
 
 // MAIN
