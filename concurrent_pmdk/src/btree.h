@@ -26,6 +26,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <vector>
+#include "util.h"
 
 #define PAGESIZE (512)
 
@@ -160,7 +161,7 @@ public:
 
     hdr.last_index = 0;
 
-    pmemobj_persist(pop, this, sizeof(page));
+    _pmemobj_persist(pop, this, sizeof(page));
   }
 
   inline int count() {
@@ -216,7 +217,7 @@ public:
             ((((int)(remainder + sizeof(entry)) / CACHE_LINE_SIZE) == 1) &&
              ((remainder + sizeof(entry)) % CACHE_LINE_SIZE) != 0);
         if (do_flush) {
-          pmemobj_persist(pop, (void *)records_ptr, CACHE_LINE_SIZE);
+          _pmemobj_persist(pop, (void *)records_ptr, CACHE_LINE_SIZE);
         }
       }
     }
@@ -266,7 +267,7 @@ public:
         if (hdr.level > 0) {
           if (num_entries_before == 1 && (hdr.sibling_ptr.oid.off == 0)) {
             bt->root.oid.off = (uint64_t)hdr.leftmost_ptr;
-            pmemobj_persist(bt->pop, &(bt->root), sizeof(TOID(page)));
+            _pmemobj_persist(bt->pop, &(bt->root), sizeof(TOID(page)));
 
             hdr.is_deleted = 1;
           }
@@ -361,11 +362,11 @@ public:
           }
 
           D_RW(left_sibling)->records[m].ptr = nullptr;
-          pmemobj_persist(bt->pop, &(D_RW(left_sibling)->records[m].ptr),
+          _pmemobj_persist(bt->pop, &(D_RW(left_sibling)->records[m].ptr),
                           sizeof(char *));
 
           D_RW(left_sibling)->hdr.last_index = m - 1;
-          pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.last_index),
+          _pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.last_index),
                           sizeof(int16_t));
 
           parent_key = records[0].key;
@@ -381,14 +382,14 @@ public:
           parent_key = D_RO(left_sibling)->records[m].key;
 
           hdr.leftmost_ptr = (page *)D_RO(left_sibling)->records[m].ptr;
-          pmemobj_persist(bt->pop, &(hdr.leftmost_ptr), sizeof(page *));
+          _pmemobj_persist(bt->pop, &(hdr.leftmost_ptr), sizeof(page *));
 
           D_RW(left_sibling)->records[m].ptr = nullptr;
-          pmemobj_persist(bt->pop, &(D_RW(left_sibling)->records[m].ptr),
+          _pmemobj_persist(bt->pop, &(D_RW(left_sibling)->records[m].ptr),
                           sizeof(char *));
 
           D_RW(left_sibling)->hdr.last_index = m - 1;
-          pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.last_index),
+          _pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.last_index),
                           sizeof(int16_t));
         }
 
@@ -406,7 +407,7 @@ public:
         }
       } else { // from leftmost case
         hdr.is_deleted = 1;
-        pmemobj_persist(bt->pop, &(hdr.is_deleted), sizeof(uint8_t));
+        _pmemobj_persist(bt->pop, &(hdr.is_deleted), sizeof(uint8_t));
 
         TOID(page) new_sibling;
         POBJ_NEW(bt->pop, &new_sibling, page, NULL, NULL);
@@ -430,10 +431,10 @@ public:
                              &new_sibling_cnt, false);
           }
 
-          pmemobj_persist(bt->pop, D_RW(new_sibling), sizeof(page));
+          _pmemobj_persist(bt->pop, D_RW(new_sibling), sizeof(page));
 
           D_RW(left_sibling)->hdr.sibling_ptr = new_sibling;
-          pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.sibling_ptr),
+          _pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.sibling_ptr),
                           sizeof(page *));
 
           parent_key = D_RO(new_sibling)->records[0].key;
@@ -457,10 +458,10 @@ public:
                 ->insert_key(bt->pop, records[i].key, records[i].ptr,
                              &new_sibling_cnt, false);
           }
-          pmemobj_persist(bt->pop, D_RW(new_sibling), sizeof(page));
+          _pmemobj_persist(bt->pop, D_RW(new_sibling), sizeof(page));
 
           D_RW(left_sibling)->hdr.sibling_ptr = new_sibling;
-          pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.sibling_ptr),
+          _pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.sibling_ptr),
                           sizeof(page *));
         }
 
@@ -480,7 +481,7 @@ public:
       }
     } else {
       hdr.is_deleted = 1;
-      pmemobj_persist(bt->pop, &(hdr.is_deleted), sizeof(uint8_t));
+      _pmemobj_persist(bt->pop, &(hdr.is_deleted), sizeof(uint8_t));
 
       if (hdr.leftmost_ptr)
         D_RW(left_sibling)
@@ -494,7 +495,7 @@ public:
       }
 
       D_RW(left_sibling)->hdr.sibling_ptr = hdr.sibling_ptr;
-      pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.sibling_ptr),
+      _pmemobj_persist(bt->pop, &(D_RW(left_sibling)->hdr.sibling_ptr),
                       sizeof(page *));
     }
 
@@ -523,7 +524,7 @@ public:
       array_end->ptr = (char *)NULL;
 
       if (flush) {
-        pmemobj_persist(pop, this, CACHE_LINE_SIZE);
+        _pmemobj_persist(pop, this, CACHE_LINE_SIZE);
       }
     } else {
       int i = *num_entries - 1, inserted = 0, to_flush_cnt = 0;
@@ -531,7 +532,7 @@ public:
 
       if (flush) {
         if ((uint64_t) & (records[*num_entries + 1]) % CACHE_LINE_SIZE == 0)
-          pmemobj_persist(pop, &records[*num_entries + 1].ptr, sizeof(char *));
+          _pmemobj_persist(pop, &records[*num_entries + 1].ptr, sizeof(char *));
       }
 
       // FAST
@@ -549,7 +550,7 @@ public:
                 ((((int)(remainder + sizeof(entry)) / CACHE_LINE_SIZE) == 1) &&
                  ((remainder + sizeof(entry)) % CACHE_LINE_SIZE) != 0);
             if (do_flush) {
-              pmemobj_persist(pop, (void *)records_ptr, CACHE_LINE_SIZE);
+              _pmemobj_persist(pop, (void *)records_ptr, CACHE_LINE_SIZE);
               to_flush_cnt = 0;
             } else
               ++to_flush_cnt;
@@ -560,7 +561,7 @@ public:
           records[i + 1].ptr = ptr;
 
           if (flush)
-            pmemobj_persist(pop, &records[i + 1], sizeof(entry));
+            _pmemobj_persist(pop, &records[i + 1], sizeof(entry));
           inserted = 1;
           break;
         }
@@ -571,7 +572,7 @@ public:
         records[0].ptr = ptr;
 
         if (flush)
-          pmemobj_persist(pop, &records[0], sizeof(entry));
+          _pmemobj_persist(pop, &records[0], sizeof(entry));
       }
     }
 
@@ -646,10 +647,10 @@ public:
       }
 
       sibling_ptr->hdr.sibling_ptr = hdr.sibling_ptr;
-      pmemobj_persist(bt->pop, sibling_ptr, sizeof(page));
+      _pmemobj_persist(bt->pop, sibling_ptr, sizeof(page));
 
       hdr.sibling_ptr = sibling;
-      pmemobj_persist(bt->pop, &hdr, sizeof(hdr));
+      _pmemobj_persist(bt->pop, &hdr, sizeof(hdr));
 
       // set to NULL
       if (IS_FORWARD(hdr.switch_counter))
@@ -657,10 +658,10 @@ public:
       else
         ++hdr.switch_counter;
       records[m].ptr = NULL;
-      pmemobj_persist(bt->pop, &records[m], sizeof(entry));
+      _pmemobj_persist(bt->pop, &records[m], sizeof(entry));
 
       hdr.last_index = m - 1;
-      pmemobj_persist(bt->pop, &hdr.last_index, sizeof(int16_t));
+      _pmemobj_persist(bt->pop, &hdr.last_index, sizeof(int16_t));
 
       num_entries = hdr.last_index + 1;
 
@@ -976,7 +977,7 @@ void btree::constructor(PMEMobjpool *pool) {
 
 void btree::setNewRoot(TOID(page) new_root) {
   root = new_root;
-  pmemobj_persist(pop, &root, sizeof(TOID(page)));
+  _pmemobj_persist(pop, &root, sizeof(TOID(page)));
   ++height;
 }
 
