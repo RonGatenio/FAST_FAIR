@@ -1,5 +1,7 @@
 #include "btree.h"
 
+#define POOL_SIZE 8000000000
+
 /*
  *  *file_exists -- checks if file exists
  *   */
@@ -47,7 +49,7 @@ int main(int argc, char **argv) {
   PMEMobjpool *pop;
 
   if (file_exists(persistent_path) != 0) {
-    pop = pmemobj_create(persistent_path, "btree", 8000000000,
+    pop = pmemobj_create(persistent_path, "btree", POOL_SIZE,
                          0666); // make 1GB memory pool
     bt = POBJ_ROOT(pop, btree);
     D_RW(bt)->constructor(pop);
