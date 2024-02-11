@@ -1,19 +1,18 @@
 .PHONY: all clean
 .DEFAULT_GOAL := all
 
-LIBS=-lrt -lm -pthread -lpmemobj
-INCLUDES=-I./include
+CXX := clang++
 CFLAGS=-O3 -std=c++11 -g
-CXX := ${LLVM_HOME}/bin/clang++ -fsanitize=thread
-# CXX := g++
+LIBS=-lrt -lm -pthread -lpmemobj -ldl
+PRD_FLAGS := -fpass-plugin=/app/build/bin/PrdPass.so -l:/app/build/bin/tsan-x86_64.a -mclwb -mclflushopt -fuse-ld=gold -z muldefs
 
 output = btree_concurrent btree_concurrent_mixed
 
 all: main
 
 main: src/test.cpp
-	$(CXX) $(CFLAGS) -o btree_concurrent src/test.cpp $(LIBS) -DCONCURRENT
-	$(CXX) $(CFLAGS) -o btree_concurrent_mixed src/test.cpp $(LIBS) -DCONCURRENT -DMIXED
+	$(CXX) $(CFLAGS) $^ $(PRD_FLAGS) -o btree_concurrent src/test.cpp $(LIBS) -DCONCURRENT
+	$(CXX) $(CFLAGS) $^ $(PRD_FLAGS) -o btree_concurrent_mixed src/test.cpp $(LIBS) -DCONCURRENT -DMIXED
 
 clean: 
 	rm $(output)
