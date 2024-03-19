@@ -11,8 +11,8 @@ output = btree_concurrent btree_concurrent_mixed
 all: main
 
 main: src/test.cpp
-	$(CXX) $(CFLAGS) $^ $(PRD_FLAGS) -o btree_concurrent src/test.cpp $(LIBS) -DCONCURRENT
-	$(CXX) $(CFLAGS) $^ $(PRD_FLAGS) -o btree_concurrent_mixed src/test.cpp $(LIBS) -DCONCURRENT -DMIXED
+	$(CXX) $(CFLAGS) $^ $(PRD_FLAGS) -o btree_concurrent $(LIBS) -DCONCURRENT
+	$(CXX) $(CFLAGS) $^ $(PRD_FLAGS) -o btree_concurrent_mixed $(LIBS) -DCONCURRENT -DMIXED
 
 clean: 
 	rm $(output)
