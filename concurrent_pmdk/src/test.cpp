@@ -1,6 +1,6 @@
 #include "btree.h"
 
-#define POOL_SIZE 8000000000
+#define POOL_SIZE 10*0x400*0x400
 
 /*
  *  *file_exists -- checks if file exists
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
   // Parsing arguments
   int numData = 0;
   int n_threads = 1;
-  char *input_path = (char *)std::string("../sample_input.txt").data();
+  char *input_path = nullptr;
   char *persistent_path;
 
   int c;
@@ -54,8 +54,10 @@ int main(int argc, char **argv) {
     bt = POBJ_ROOT(pop, btree);
     D_RW(bt)->constructor(pop);
   } else {
+    printf("recovery!\n");
     pop = pmemobj_open(persistent_path, "btree");
     bt = POBJ_ROOT(pop, btree);
+    D_RW(bt)->pop = pop;
   }
 
   struct timespec start, end, tmp;

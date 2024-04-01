@@ -48,7 +48,7 @@ pthread_mutex_t print_mtx;
 using namespace std;
 
 class btree {
-private:
+public:
   int height;
   TOID(page) root;
   PMEMobjpool *pop;
