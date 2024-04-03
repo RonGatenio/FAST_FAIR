@@ -4,7 +4,7 @@
 CXX := clang++
 CFLAGS=-O3 -std=c++11 -g
 LIBS=-lrt -lm -pthread -lpmemobj -ldl
-PRD_FLAGS := -fpass-plugin=${APP_BIN}/PrdPass.so -l:${APP_BIN}/cprd-x86_64.a -mclwb -mclflushopt -fuse-ld=gold -z muldefs
+PRD_FLAGS := ${PRD_C_FLAGS}
 
 output = btree_concurrent btree_concurrent_mixed
 
